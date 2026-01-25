@@ -1,3 +1,4 @@
+ARG CACHE_BREAKER=1
 FROM registry.access.redhat.com/ubi10/ubi-minimal:latest
 
 # Labels for OpenShift/Kubernetes
@@ -31,8 +32,12 @@ RUN git clone https://github.com/conan-io/conan.git conan-io && \
     conan config install conan/profiles/ -tf $(conan config home)/profiles/ && \
     conan remote add --index 0 xrplf https://conan.ripplex.io && \
     mkdir .build && cd .build && \
-    conan install .. --output-folder . --build missing --settings build_type=Release && \
-    cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON .. && \
-    cmake --build . && \
+    conan install .. --output-folder . --build missing --settings build_type=Release
+
+WORKDIR /opt/app-root/src/rippled/.build
+
+RUN cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON ..
+
+RUN cmake --build . && \
     ./xrpld --unittest --unittest-jobs 4 && \
     mv xrpld /usr/local/bin
