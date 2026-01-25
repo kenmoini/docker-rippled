@@ -18,6 +18,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      cache_breaker:
+        type: string
+        description: Cache Breaker
+        default: "1"
 
 jobs:
   # Build the container
@@ -73,13 +78,15 @@ jobs:
           context: ${{ env.BUILD_CONTEXT_PATH }}
           file: ${{ env.CONTAINERFILE_PATH }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CACHE_BREAKER=${{ github.event.inputs.cache_breaker }}
           #push: true
           #provenance: false
           #platforms: linux/amd64, linux/arm64
           #provenance: mode=max
           #sbom: true
-          #cache-from: type=gha
-          #cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Export digest
         run: |
