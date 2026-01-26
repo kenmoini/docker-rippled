@@ -17,8 +17,8 @@ LABEL name="rippled" \
 WORKDIR /opt/app-root/src
 
 # Install and update
-RUN /usr/bin/crb enable && \
-    dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
+RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
+    /usr/bin/crb enable && \
     dnf update -y && \
     dnf install -y ca-certificates gcc g++ python3 python3-pip python3-devel curl wget git cmake libstdc++-devel libstdc++ libstdc++-static && \
     dnf clean all && \
