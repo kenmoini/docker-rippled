@@ -39,7 +39,8 @@ RUN git clone --depth=1 --branch master https://github.com/XRPLF/rippled.git && 
 WORKDIR /opt/app-root/src/rippled/.build
 
 RUN cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON ..
-RUN cmake --build .
+RUN echo "======= Building with $(getconf _NPROCESSORS_CONF) CPUs..." && \
+    cmake --build . -j $(getconf _NPROCESSORS_CONF)
 RUN ./rippled --unittest --unittest-jobs 4
 
 FROM registry.access.redhat.com/ubi10/ubi:latest
