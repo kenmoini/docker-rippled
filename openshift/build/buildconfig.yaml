@@ -1,0 +1,31 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    name: rippled
+  name: rippled
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: rippled:latest
+  postCommit: {}
+  resources:
+    limits:
+      cpu: '8'
+      memory: 32Gi
+    requests:
+      cpu: '8'
+      memory: 32Gi
+  runPolicy: Serial
+  source:
+    git:
+      uri: https://github.com/kenmoini/docker-rippled.git
+    type: Git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  triggers:
+    - type: ConfigChange
