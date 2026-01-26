@@ -1,4 +1,5 @@
 ARG CACHE_BREAKER=1
+
 FROM registry.access.redhat.com/ubi10/ubi:latest AS builder
 
 # Labels for OpenShift/Kubernetes
@@ -17,7 +18,7 @@ LABEL name="rippled" \
 WORKDIR /opt/app-root/src
 
 # Install and update
-RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
+RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm -y && \
     /usr/bin/crb enable && \
     dnf update -y && \
     dnf install -y ca-certificates gcc g++ python3 python3-pip python3-devel curl wget git cmake libstdc++-devel libstdc++ libstdc++-static && \
@@ -38,13 +39,17 @@ RUN git clone --depth=1 --branch master https://github.com/XRPLF/rippled.git && 
 WORKDIR /opt/app-root/src/rippled/.build
 
 RUN cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON ..
-RUN cmake --build . && \
-    ./rippled --unittest --unittest-jobs 4
+RUN cmake --build .
+RUN ./rippled --unittest --unittest-jobs 4
 
 FROM registry.access.redhat.com/ubi10/ubi:latest
+USER 0
 
 COPY --from=builder --chmod=755 /opt/app-root/src/rippled/.build/rippled /usr/local/bin/rippled
+RUN dnf update -y && \
+    dnf clean all && \
+    rm -rf /var/cache/yum
 
 USER 1001
 
-ENTRYPOINT /usr/local/bin/rippled
+ENTRYPOINT ["/usr/local/bin/rippled"]
