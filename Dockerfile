@@ -1,5 +1,5 @@
 ARG CACHE_BREAKER=1
-FROM registry.access.redhat.com/ubi10/ubi:latest
+FROM registry.access.redhat.com/ubi10/ubi:latest AS builder
 
 # Labels for OpenShift/Kubernetes
 LABEL name="rippled" \
@@ -39,5 +39,12 @@ WORKDIR /opt/app-root/src/rippled/.build
 
 RUN cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON ..
 RUN cmake --build . && \
-    ./xrpld --unittest --unittest-jobs 4 && \
-    mv xrpld /usr/local/bin
+    ./rippled --unittest --unittest-jobs 4
+
+FROM registry.access.redhat.com/ubi10/ubi:latest
+
+COPY --from=builder --chmod=755 /opt/app-root/src/rippled/.build/rippled /usr/local/bin/rippled
+
+USER 1001
+
+ENTRYPOINT /usr/local/bin/rippled
