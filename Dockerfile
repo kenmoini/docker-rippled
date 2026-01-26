@@ -1,5 +1,5 @@
 ARG CACHE_BREAKER=1
-FROM registry.access.redhat.com/ubi10/ubi-minimal:latest
+FROM registry.access.redhat.com/ubi10/ubi:latest
 
 # Labels for OpenShift/Kubernetes
 LABEL name="rippled" \
@@ -17,18 +17,19 @@ LABEL name="rippled" \
 WORKDIR /opt/app-root/src
 
 # Install and update
-RUN microdnf update -y && \
-    microdnf install -y ca-certificates gcc g++ python3 python3-pip python3-devel curl wget git cmake && \
-    microdnf clean all && \
+RUN /usr/bin/crb enable && \
+    dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm && \
+    dnf update -y && \
+    dnf install -y ca-certificates gcc g++ python3 python3-pip python3-devel curl wget git cmake libstdc++-devel libstdc++ libstdc++-static && \
+    dnf clean all && \
     rm -rf /var/cache/yum
 
 # Build Conan and rippled
 RUN git clone https://github.com/conan-io/conan.git conan-io && \
-    cd conan-io && pip install -e . && \
-    cd .. && \
-    git clone https://github.com/XRPLF/rippled.git && \
+    cd conan-io && pip install -e .
+
+RUN git clone --depth=1 --branch master https://github.com/XRPLF/rippled.git && \
     cd rippled && \
-    git checkout master && \
     conan config install conan/profiles/ -tf $(conan config home)/profiles/ && \
     conan remote add --index 0 xrplf https://conan.ripplex.io && \
     mkdir .build && cd .build && \
@@ -37,7 +38,6 @@ RUN git clone https://github.com/conan-io/conan.git conan-io && \
 WORKDIR /opt/app-root/src/rippled/.build
 
 RUN cmake -DCMAKE_TOOLCHAIN_FILE:FILEPATH=build/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -Dxrpld=ON -Dtests=ON ..
-
 RUN cmake --build . && \
     ./xrpld --unittest --unittest-jobs 4 && \
     mv xrpld /usr/local/bin
