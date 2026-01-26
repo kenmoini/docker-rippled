@@ -26,7 +26,7 @@ RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noa
     rm -rf /var/cache/yum
 
 # Build Conan and rippled
-RUN git clone https://github.com/conan-io/conan.git conan-io && \
+RUN git clone --depth=1 --branch release/2.24 https://github.com/conan-io/conan.git conan-io && \
     cd conan-io && pip install -e .
 
 RUN git clone --depth=1 --branch master https://github.com/XRPLF/rippled.git && \
