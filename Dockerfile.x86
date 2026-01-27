@@ -1,0 +1,19 @@
+ARG CACHE_BREAKER=1
+
+FROM registry.access.redhat.com/ubi9/ubi:latest AS builder
+
+# Labels for OpenShift/Kubernetes
+LABEL name="rippled" \
+      summary="XRP Ledger Daemon" \
+      description="Runs rippled, the XRP Ledger Daemon, commonly as a validator node" \
+      maintainer="Ken Moini" \
+      version="1.0" \
+      io.k8s.display-name="rippled" \
+      io.k8s.description="Runs rippled, the XRP Ledger Daemon, commonly as a validator node" \
+      io.openshift.tags="cryptocurrency,xrp,ripple,rippled"
+
+# Only works on x86
+COPY ripple.repo /etc/yum.repos.d/
+
+RUN dnf update -y && \
+    dnf install rippled -y
