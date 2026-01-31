@@ -1,3 +1,4 @@
+# Only works on x86_64 architecture
 ARG CACHE_BREAKER=1
 
 FROM registry.access.redhat.com/ubi9/ubi:latest AS builder
@@ -12,8 +13,26 @@ LABEL name="rippled" \
       io.k8s.description="Runs rippled, the XRP Ledger Daemon, commonly as a validator node" \
       io.openshift.tags="cryptocurrency,xrp,ripple,rippled"
 
-# Only works on x86
 COPY ripple.repo /etc/yum.repos.d/
 
 RUN dnf update -y && \
     dnf install rippled -y
+
+WORKDIR /opt/ripple/bin
+ENTRYPOINT ["/opt/ripple/bin/rippled"]
+
+# Configuration volume
+VOLUME ["/etc/opt/ripple"]
+# Database volume
+VOLUME ["/var/lib/rippled/db"]
+# Log volume
+VOLUME ["/var/log/rippled"]
+
+# Peer Port
+EXPOSE 2459
+# Websockets Admin Port
+EXPOSE 6006
+# JSON-RPC Port
+EXPOSE 5005
+# gRPC Port
+EXPOSE 50051
