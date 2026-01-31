@@ -54,3 +54,19 @@ RUN dnf update -y && \
 USER 1001
 
 ENTRYPOINT ["/usr/local/bin/rippled"]
+
+# Configuration volume
+VOLUME ["/etc/opt/ripple"]
+# Database volume
+VOLUME ["/var/lib/rippled/db"]
+# Log volume
+VOLUME ["/var/log/rippled"]
+
+# Peer Port
+EXPOSE 2459
+# Websockets Admin Port
+EXPOSE 6006
+# JSON-RPC Port
+EXPOSE 5005
+# gRPC Port
+EXPOSE 50051

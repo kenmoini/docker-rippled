@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: rippled
+  name: rippled
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"rippled:latest","namespace":"rippled"},"fieldPath":"spec.template.spec.containers[?(@.name==\"container\")].image","paused":false}]
+spec:
+  selector:
+    matchLabels:
+      app: rippled
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rippled
+    spec:
+      volumes:
+        - name: rippled
+          persistentVolumeClaim:
+            claimName: rippled
+        - name: rippled-db
+          persistentVolumeClaim:
+            claimName: rippled-db
+        - name: rippled-conf
+          configMap:
+            name: rippled-conf
+
+      containers:
+        - name: container
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/rippled/rippled@sha256:7aff2b5e9d65a107d6e4ccec1b412e2eeb89bc2925b76f7e2aaec85c987d1bb5
+          env: []
+          volumeMounts:
+            - name: rippled
+              mountPath: /var/opt/ripple
+            - name: rippled-db
+              mountPath: /var/lib/rippled
+            - name: rippled-conf
+              mountPath: /etc/opt/ripple
+          
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  paused: false

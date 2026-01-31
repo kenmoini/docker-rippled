@@ -1,29 +1,31 @@
-apiVersion: build.openshift.io/v1
 kind: BuildConfig
+apiVersion: build.openshift.io/v1
 metadata:
-  name: rippled
+  name: rippled-x86
   labels:
-    name: rippled
+    name: rippled-x86
 spec:
   source:
-    git:
-      uri: https://github.com/kenmoini/docker-rippled.git
     type: Git
+    git:
+      uri: 'https://github.com/kenmoini/docker-rippled.git'
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile
+      dockerfilePath: Dockerfile.x86
+  nodeSelector:
+    beta.kubernetes.io/arch: amd64
   output:
     to:
       kind: ImageStreamTag
-      name: rippled:latest
+      name: 'rippled-x86:latest'
   resources:
     limits:
-      cpu: '8'
+      cpu: '4'
       memory: 32Gi
     requests:
-      cpu: '8'
-      memory: 32Gi
+      cpu: '2'
+      memory: 8Gi
   triggers:
     - type: ConfigChange
   runPolicy: Serial
